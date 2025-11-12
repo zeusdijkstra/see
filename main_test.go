@@ -55,7 +55,7 @@ func TestRun(t *testing.T) {
 	// this is where the fun part beginssss!
 	var mockStdOut bytes.Buffer
 
-	if err := run(inputFile, &mockStdOut); err != nil {
+	if err := run(inputFile, &mockStdOut, true); err != nil {
 		t.Fatal(err)
 	}
 

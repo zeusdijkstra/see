@@ -12,4 +12,4 @@ Here's `inline code` and some ~~strikethrough~~ text.
 
 ---
 
-THIS IS JUST TEST GUYSSSS!
+THIS IS JUST A TEST GUYSSSS!
