@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"regexp"
 	"strings"
@@ -9,25 +10,21 @@ import (
 
 const (
 	inputFile  = "./testdata/test1.md"
-	resultFile = "test1.md.html"
 	goldenFile = "./testdata/test1.md.html"
 )
 
-// normalizeHTML removes insignificant differences in whitespace, indentation, and newlines
+// Use ChatGPT to normalize HTML output for testing
+// Handles inconsistent whitespace and indentation across HTML generators
 func normalizeHTML(s string) string {
-	// collapse spaces and newlines between tags
 	reBetweenTags := regexp.MustCompile(`>\s+<`)
 	s = reBetweenTags.ReplaceAllString(s, "><")
 
-	// remove extra spaces, tabs, and newlines
 	reSpaces := regexp.MustCompile(`\s{2,}`)
 	s = reSpaces.ReplaceAllString(s, " ")
 
-	// remove newlines before </code>
 	reCodeNewline := regexp.MustCompile(`(?s)<code>(.*?)\s*</code>`)
 	s = reCodeNewline.ReplaceAllString(s, "<code>$1</code>")
 
-	// trim overall whitespace
 	s = strings.TrimSpace(s)
 	return s
 }
@@ -55,9 +52,15 @@ func TestParseContent(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	if err := run(inputFile); err != nil {
+	// this is where the fun part beginssss!
+	var mockStdOut bytes.Buffer
+
+	if err := run(inputFile, &mockStdOut); err != nil {
 		t.Fatal(err)
 	}
+
+	// get the value out of the buffer
+	resultFile := strings.TrimSpace(mockStdOut.String())
 
 	result, err := os.ReadFile(resultFile)
 	if err != nil {
@@ -77,4 +80,5 @@ func TestRun(t *testing.T) {
 		t.Logf("result (normalized): \n%s\n", normalizedResult)
 		t.Error("Result content does not match golden file (after normalization)")
 	}
+	os.Remove(resultFile)
 }

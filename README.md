@@ -1,34 +1,15 @@
-# Example Markdown File
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
 
-This is a simple test file for your **Markdown Preview** project.
+This is a **bold** text and this is *italic* text.
+This is ***bold and italic*** text.
 
-## Paragraphs and Formatting
+Here's `inline code` and some ~~strikethrough~~ text.
 
-You can write text in *italic*, **bold**, or even ***bold italic***.  
-You can also have `inline code` like this.
+---
 
-## Links and Lists
-
-Here are some useful links:
-* [Google](https://www.google.com/)
-* [GitHub](https://github.com/)
-* [Go Documentation](https://go.dev/doc)
-
-And here’s an ordered list:
-1. First item
-2. Second item
-3. Third item
-
-## Code Block
-
-Here’s a simple Go code example:
-
-```go
-package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, Markdown!")
-}
-
+THIS IS JUST TEST GUYSSSS!
