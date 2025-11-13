@@ -55,82 +55,87 @@ func main() {
 }
 
 func preview(fname string) error {
-	cName := ""
-	cParams := []string{}
+	var cmd *exec.Cmd
 
 	switch runtime.GOOS {
 	case "linux":
-		cName = "xdg-open"
+		cmd = exec.Command("xdg-open", fname)
 	case "windows":
-		cName = "cmd.exe"
-		cParams = []string{"/C", "start"}
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", fname)
 	case "darwin":
-		cName = "open"
+		cmd = exec.Command("open", fname)
 	default:
-		return fmt.Errorf("OS not supported")
+		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 	}
 
-	cParams = append(cParams, fname)
-
-	cPath, err := exec.LookPath(cName)
-	if err != nil {
-		return err
+	// use Start() so it doesn’t block while the viewer opens.
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("start preview: %w", err)
 	}
 
-	err = exec.Command(cPath, cParams...).Run()
-	time.Sleep(time.Second)
-	return err
+	// wait a short moment to help ensure the file opens properly
+	time.Sleep(1 * time.Second)
+
+	return nil
 }
 
-func run(filename string, tFname string, out io.Writer, skipPreview bool) error {
+func run(filename, tFname string, out io.Writer, skipPreview bool) error {
 	input, err := os.ReadFile(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("read file: %w", err)
 	}
 
 	htmlData, err := parseContent(input, tFname)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse content: %w", err)
 	}
 
 	temp, err := os.CreateTemp("", "mdp*.html")
 	if err != nil {
-		return err
+		return fmt.Errorf("create temp file: %w", err)
 	}
 	defer temp.Close()
 
 	outName := temp.Name()
-
 	fmt.Fprintln(out, outName)
 
 	if err := saveHTML(outName, htmlData); err != nil {
-		return err
+		return fmt.Errorf("save html: %w", err)
 	}
 
 	if skipPreview {
 		return nil
 	}
 
-	defer os.Remove(outName) // code execution flow is really matters
+	if err := preview(outName); err != nil {
+		return fmt.Errorf("preview: %w", err)
+	}
 
-	return preview(outName)
+	// cleanup temp file asynchronously after giving the preview time to load
+	// go func(name string) {
+	// 	time.Sleep(10 * time.Second)
+	// 	_ = os.Remove(name)
+	// }(outName)
+	// OR JUST DON'T REMOVE IT AT ALL...
+
+	return nil
 }
 
 func parseContent(input []byte, tFname string) ([]byte, error) {
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
 
-	// if user does not provide a custom template
+	// If user does not provide a custom template
 	t, err := template.New("newTemplate").Parse(defaultTemplate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse default template: %w", err)
 	}
 
-	// if user provide a custom template
+	// If user provides a custom template
 	if tFname != "" {
 		t, err = template.ParseFiles(tFname)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse custom template %q: %w", tFname, err)
 		}
 	}
 
@@ -142,7 +147,7 @@ func parseContent(input []byte, tFname string) ([]byte, error) {
 	var buffer bytes.Buffer
 
 	if err := t.Execute(&buffer, c); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("execute template: %w", err)
 	}
 
 	return buffer.Bytes(), nil
