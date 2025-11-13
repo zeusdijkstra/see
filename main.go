@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"html/template"
 	"io"
 	"os"
 	"os/exec"
@@ -15,23 +16,31 @@ import (
 )
 
 const (
-	header = `<!DOCTYPE html>
+	defaultTemplate = `
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Test Markdown File</title>
-  </head>
-  <body>`
-	footer = `
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Title }}</title>
+</head>
+<body>
+{{ .Body }}
+</body>
 </html>
 `
 )
 
+type content struct {
+	Title string
+	Body  template.HTML
+}
+
 func main() {
 	filename := flag.String("file", "", "Markdown file to preview")
+	tFname := flag.String("t", "", "Alternate template name")
 	skipPreview := flag.Bool("s", false, "Skip auto-preview")
+
 	flag.Parse()
 
 	if *filename == "" {
@@ -39,7 +48,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*filename, os.Stdout, *skipPreview); err != nil {
+	if err := run(*filename, *tFname, os.Stdout, *skipPreview); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -73,13 +82,16 @@ func preview(fname string) error {
 	return err
 }
 
-func run(filename string, out io.Writer, skipPreview bool) error {
+func run(filename string, tFname string, out io.Writer, skipPreview bool) error {
 	input, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}
 
-	htmlData := parseContent(input)
+	htmlData, err := parseContent(input, tFname)
+	if err != nil {
+		return err
+	}
 
 	temp, err := os.CreateTemp("", "mdp*.html")
 	if err != nil {
@@ -104,17 +116,36 @@ func run(filename string, out io.Writer, skipPreview bool) error {
 	return preview(outName)
 }
 
-func parseContent(input []byte) []byte {
+func parseContent(input []byte, tFname string) ([]byte, error) {
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
 
+	// if user does not provide a custom template
+	t, err := template.New("newTemplate").Parse(defaultTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	// if user provide a custom template
+	if tFname != "" {
+		t, err = template.ParseFiles(tFname)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	c := content{
+		Title: "Test Markdown File",
+		Body:  template.HTML(body),
+	}
+
 	var buffer bytes.Buffer
 
-	buffer.WriteString(header)
-	buffer.Write(body)
-	buffer.WriteString(footer)
+	if err := t.Execute(&buffer, c); err != nil {
+		return nil, err
+	}
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 func saveHTML(outFname string, data []byte) error {

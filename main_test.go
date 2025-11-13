@@ -9,12 +9,10 @@ import (
 )
 
 const (
-	inputFile  = "./testdata/test1.md"
-	goldenFile = "./testdata/test1.md.html"
+	inputFile  = "./testdata/test_inputFile.md"
+	goldenFile = "./testdata/test_goldenFile.md.html"
 )
 
-// Use ChatGPT to normalize HTML output for testing
-// Handles inconsistent whitespace and indentation across HTML generators
 func normalizeHTML(s string) string {
 	reBetweenTags := regexp.MustCompile(`>\s+<`)
 	s = reBetweenTags.ReplaceAllString(s, "><")
@@ -35,7 +33,11 @@ func TestParseContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result := parseContent(input)
+	result, err := parseContent(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	expected, err := os.ReadFile(goldenFile)
 	if err != nil {
 		t.Fatal(err)
@@ -52,10 +54,9 @@ func TestParseContent(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	// this is where the fun part beginssss!
 	var mockStdOut bytes.Buffer
 
-	if err := run(inputFile, &mockStdOut, true); err != nil {
+	if err := run(inputFile, "", &mockStdOut, true); err != nil {
 		t.Fatal(err)
 	}
 
