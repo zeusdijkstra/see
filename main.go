@@ -20,20 +20,24 @@ const (
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ .Title }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Title }}</title>
 </head>
 <body>
-{{ .Body }}
+    <header>
+        <small>Viewing file: {{ .FileName }}</small>
+    </header>
+    {{ .Body }}
 </body>
 </html>
 `
 )
 
 type content struct {
-	Title string
-	Body  template.HTML
+	Title    string
+	Body     template.HTML
+	FileName string
 }
 
 func main() {
@@ -85,7 +89,7 @@ func run(filename, tFname string, out io.Writer, skipPreview bool) error {
 		return fmt.Errorf("read file: %w", err)
 	}
 
-	htmlData, err := parseContent(input, tFname)
+	htmlData, err := parseContent(input, tFname, filename)
 	if err != nil {
 		return fmt.Errorf("parse content: %w", err)
 	}
@@ -121,27 +125,30 @@ func run(filename, tFname string, out io.Writer, skipPreview bool) error {
 	return nil
 }
 
-func parseContent(input []byte, tFname string) ([]byte, error) {
+func parseContent(input []byte, tFname string, filename string) ([]byte, error) {
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
 
-	// If user does not provide a custom template
-	t, err := template.New("newTemplate").Parse(defaultTemplate)
-	if err != nil {
-		return nil, fmt.Errorf("parse default template: %w", err)
-	}
+	var t *template.Template
+	var err error
 
-	// If user provides a custom template
 	if tFname != "" {
 		t, err = template.ParseFiles(tFname)
 		if err != nil {
 			return nil, fmt.Errorf("parse custom template %q: %w", tFname, err)
 		}
+	} else {
+		// otherwise fall back to the default template
+		t, err = template.New("default").Parse(defaultTemplate)
+		if err != nil {
+			return nil, fmt.Errorf("parse default template: %w", err)
+		}
 	}
 
 	c := content{
-		Title: "Test Markdown File",
-		Body:  template.HTML(body),
+		Title:    "Test Markdown File",
+		Body:     template.HTML(body),
+		FileName: filename,
 	}
 
 	var buffer bytes.Buffer

@@ -35,7 +35,7 @@ func TestParseContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result, err := parseContent(input, "")
+	result, err := parseContent(input, "", "./testdata/test_inputFile.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestParseContentCustomTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result, err := parseContent(input, customTemplate)
+	result, err := parseContent(input, customTemplate, "")
 	if err != nil {
 		t.Fatal(err)
 	}
