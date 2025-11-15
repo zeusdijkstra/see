@@ -9,10 +9,12 @@ import (
 )
 
 const (
-	inputFile        = "./testdata/test_inputFile.md"
-	goldenFile       = "./testdata/test_goldenFile.md.html"
-	customTemplate   = "./testdata/custom_template.html"
-	goldenFileCustom = "./testdata/test_goldenFile_custom.md.html"
+	inputFile         = "testdata/test_inputFile.md"
+	goldenFile        = "./testdata/test_goldenFile.md.html"
+	customTemplate    = "./testdata/custom_template.html"
+	goldenFileCustom  = "./testdata/test_goldenFile_custom.md.html"
+	goldenFileMinimal = "./testdata/test_goldenFile_minimal.md.html"
+	goldenFileDark    = "./testdata/test_goldenFile_dark.md.html"
 )
 
 func normalizeHTML(s string) string {
@@ -35,7 +37,7 @@ func TestParseContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result, err := parseContent(input, "", "./testdata/test_inputFile.md")
+	result, err := parseContent(input, "", "testdata/test_inputFile.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,4 +143,56 @@ func TestRunWithCustomTemplate(t *testing.T) {
 		t.Error("Result content does not match golden file (after normalization)")
 	}
 	os.Remove(resultFile)
+}
+
+func TestParseContentMinimal(t *testing.T) {
+	input, err := os.ReadFile(inputFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := parseContent(input, "minimal", "testdata/test_inputFile.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected, err := os.ReadFile(goldenFileMinimal)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	normalizedResult := normalizeHTML(string(result))
+	normalizedExpected := normalizeHTML(string(expected))
+
+	if normalizedResult != normalizedExpected {
+		t.Logf("golden (normalized): \n%s\n", normalizedExpected)
+		t.Logf("result (normalized): \n%s\n", normalizedResult)
+		t.Error("Result content does not match golden file (after normalization)")
+	}
+}
+
+func TestParseContentDark(t *testing.T) {
+	input, err := os.ReadFile(inputFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := parseContent(input, "dark", "testdata/test_inputFile.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected, err := os.ReadFile(goldenFileDark)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	normalizedResult := normalizeHTML(string(result))
+	normalizedExpected := normalizeHTML(string(expected))
+
+	if normalizedResult != normalizedExpected {
+		t.Logf("golden (normalized): \n%s\n", normalizedExpected)
+		t.Logf("result (normalized): \n%s\n", normalizedResult)
+		t.Error("Result content does not match golden file (after normalization)")
+	}
 }

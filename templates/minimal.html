@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Title }}</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: #222;
+            background-color: #fff;
+            margin: 0;
+            padding: 40px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        h2, h3 {
+            color: #333;
+            margin-top: 40px;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #ddd;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+        @media (max-width: 600px) {
+            body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ .Title }}</h1>
+    <p>File: {{ .FileName }}</p>
+    {{ .Body }}
+</body>
+</html>

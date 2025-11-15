@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Test Markdown File</title>
+    <title>{{ .Title }}</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -56,23 +55,8 @@
 </head>
 <body>
     <header>
-        <small>Viewing file: testdata/test_inputFile.md</small>
+        <small>Viewing file: {{ .FileName }}</small>
     </header>
-    <h1>Test Markdown File</h1>
-
-<p>just a test</p>
-
-<h2>bullets:</h2>
-
-<ul>
-<li>Google <a href="https://www.google.com/" rel="nofollow">Link1</a></li>
-<li>Github <a href="https://github.com/" rel="nofollow">Link2</a></li>
-</ul>
-
-<h2>code block</h2>
-
-<pre><code>some code
-</code></pre>
-
+    {{ .Body }}
 </body>
 </html>

@@ -11,7 +11,7 @@ import (
 
 func main() {
 	filename := flag.String("file", "", "Markdown file to preview")
-	tFname := flag.String("t", "", "Alternate template name")
+	tFname := flag.String("t", "", "Template name or file path")
 	skipPreview := flag.Bool("s", false, "Skip auto-preview")
 
 	flag.Parse()
@@ -57,6 +57,7 @@ func run(filename, tFname string, out io.Writer, skipPreview bool) error {
 		return nil
 	}
 
+	// TODO: Figure it out how to remove temp file so that it does not populate temp directory
 	temp, err := os.CreateTemp("", "mdp*.html")
 	if err != nil {
 		return fmt.Errorf("create temp file: %w", err)
@@ -64,6 +65,8 @@ func run(filename, tFname string, out io.Writer, skipPreview bool) error {
 	defer temp.Close()
 
 	outName := temp.Name()
+	defer os.Remove(outName)
+
 	fmt.Fprintln(out, outName)
 
 	if err := saveHTML(outName, htmlData); err != nil {
