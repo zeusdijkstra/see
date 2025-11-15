@@ -19,7 +19,7 @@ A fast, lightweight command-line tool to preview markdown files as HTML in your 
 Clone the repository and build:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/zeusdijkstra/see.git
 cd see
 go build -o see .
 ```
@@ -27,7 +27,7 @@ go build -o see .
 ### Install Directly
 
 ```bash
-go install .
+go install github.com/zeusdijkstra/see@latest
 ```
 
 ## Usage

@@ -5,6 +5,8 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"path/filepath"
+	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -32,6 +34,25 @@ type content struct {
 	FileName string
 }
 
+func extractTitle(input []byte, filename string) string {
+	lines := strings.Split(string(input), "\n")
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "# ") {
+			return strings.TrimSpace(line[2:])
+		}
+	}
+
+	if filename != "" {
+		base := filepath.Base(filename)
+		title := strings.TrimSuffix(base, filepath.Ext(base))
+		return title
+	}
+
+	return "Untitled"
+}
+
 func parseContent(input []byte, tFname string, filename string) ([]byte, error) {
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
@@ -51,7 +72,7 @@ func parseContent(input []byte, tFname string, filename string) ([]byte, error) 
 	}
 
 	c := content{
-		Title:    "Test Markdown File",
+		Title:    extractTitle(input, filename),
 		Body:     template.HTML(body),
 		FileName: filename,
 	}

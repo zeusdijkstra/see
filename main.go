@@ -57,7 +57,6 @@ func run(filename, tFname string, out io.Writer, skipPreview bool) error {
 		return nil
 	}
 
-	// TODO: Figure it out how to remove temp file so that it does not populate temp directory
 	temp, err := os.CreateTemp("", "mdp*.html")
 	if err != nil {
 		return fmt.Errorf("create temp file: %w", err)

@@ -1,6 +1,6 @@
 module github.com/zeusdijkstra/see
 
-go 1.25.3
+go 1.22
 
 require (
 	github.com/microcosm-cc/bluemonday v1.0.27
