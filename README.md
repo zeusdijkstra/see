@@ -2,21 +2,31 @@
 
 A fast, lightweight command-line tool to preview markdown files as HTML in your browser or save them as HTML files with customizable templates.
 
-## Features
+## Why 'see'?
 
--  Instant browser preview of markdown files
--  Three built-in templates: default, minimal, and dark themes
--  Custom template support with Go HTML template syntax
--  Responsive design for all templates
--  HTML sanitization for security
--  Save HTML files without preview
--  Comprehensive test coverage
+Writing Markdown for a README or documentation always turns into the same little struggle. You can’t see what anything looks like without setting up some preview tool, the styling is almost always plain and inflexible, and you end up constantly flipping between your editor and a browser just to check simple changes. And using an online editor never feels great either—you’re basically handing your content over to some random service. That’s why **see** feels so refreshing. It’s just one simple command-line tool that instantly opens your Markdown with a clean HTML preview, lets you switch between themes or use your own, and stays completely local so nothing ever leaves your machine. It ends up saving a ton of time, gives you professional-looking output without any hassle, works for everything from READMEs to blog posts, and stays super lightweight as a single tiny binary.
+
+## Quick Start
+
+Get started in 30 seconds:
+
+```bash
+# Install
+go install github.com/zeusdijkstra/see@latest
+
+# Preview any markdown file
+see -file README.md
+
+# Use dark theme
+see -file README.md -t dark
+
+# Save as HTML without preview
+see -file README.md -s
+```
 
 ## Installation
 
 ### From Source
-
-Clone the repository and build:
 
 ```bash
 git clone https://github.com/zeusdijkstra/see.git
@@ -38,39 +48,53 @@ see -file <markdown_file> [-t <template>] [-s]
 
 ### Command Line Options
 
-- `-file`: Path to the markdown file to process (required)
-- `-t`: Template name (`default`, `minimal`, `dark`) or path to custom template file (optional)
-- `-s`: Skip browser preview and save HTML file instead (optional)
+| Option | Description |
+|--------|-------------|
+| `-file` | Path to the markdown file to process (required) |
+| `-t` | Template name (`default`, `minimal`, `dark`) or path to custom template file (optional) |
+| `-s` | Skip browser preview and save HTML file instead (optional) |
 
-## Templates
+## Examples
 
-### Built-in Templates
+### Basic Usage
+```bash
+# Preview with default template
+see -file README.md
 
-#### Default Template
-- Clean, modern design with Segoe UI font
-- Light gray background with white content area
-- Responsive layout with mobile support
-- Syntax highlighting for code blocks
+# Use dark theme
+see -file documentation.md -t dark
 
-#### Minimal Template
-- Simple, distraction-free design
-- Helvetica Neue font family
-- Clean typography with subtle borders
-- Perfect for focused reading
+# Use minimal theme 
+see -file article.md -t minimal
+```
 
-#### Dark Template
-- Dark theme with #1a1a1a background
-- High contrast for comfortable reading
-- Blue accent colors (#4fc3f7)
-- Optimized for low-light environments
+### Save HTML Files
+```bash
+# Save as HTML in current working directory without opening the browser
+see -file notes.md -s
+
+# Save with custom template
+see -file blog.md -t /path/to/blog_template.html -s
+```
+
+### Custom Templates
+```bash
+# Use your own template
+see -file report.md -t my_template.html
+
+# Template with absolute path
+see -file presentation.md -t /home/user/templates/slides.html
+```
 
 ### Creating Custom Templates
 
-To create a custom template, use Go HTML template syntax with these available variables:
+Create custom templates using Go HTML template syntax with these variables:
 
 - `{{.Title}}` - The document title (string)
 - `{{.Body}}` - Sanitized HTML content (template.HTML)
 - `{{.FileName}}` - Source file path (string)
+
+**Error Handling**: If you specify an invalid template path, `see` will return error message like: `parse custom template "invalid.html": open invalid.html: no such file or directory`
 
 #### Example Custom Template
 
@@ -116,45 +140,23 @@ Save this as `my_template.html`:
 
 Usage: `see -file example.md -t my_template.html`
 
-## Examples
-
-### Basic Preview
-```bash
-see -file README.md
-```
-Opens README.md in your browser using the default template.
-
-### Use Dark Theme
-```bash
-see -file documentation.md -t dark
-```
-Opens documentation.md with the dark theme.
-
-### Save HTML Without Preview
-```bash
-see -file notes.md -s
-```
-Saves notes.md as notes.html in the current directory.
-
-### Use Custom Template
-```bash
-see -file blog.md -t /path/to/blog_template.html
-```
-Opens blog.md using your custom template.
-
-### Minimal Theme for Reading
-```bash
-see -file article.md -t minimal
-```
-Opens article.md with the minimal, distraction-free template.
-
 ## How It Works
 
 1. **Parsing**: Uses [Blackfriday v2](https://github.com/russross/blackfriday) to convert markdown to HTML
 2. **Sanitization**: Applies [bluemonday](https://github.com/microcosm-cc/bluemonday) UGC policy for security
 3. **Templating**: Renders HTML using Go's template engine with embedded or custom templates
-4. **Preview**: Creates temporary HTML file and opens in default browser
+4. **Preview**: Creates temporary HTML file using `mdp*.html` pattern and opens in default browser
 5. **Cleanup**: Automatically removes temporary files after preview
+
+## Browser Compatibility
+
+The tool automatically detects your operating system and uses the appropriate command:
+
+| Platform | Command |
+|----------|---------|
+| **Linux** | `xdg-open` |
+| **macOS** | `open` |
+| **Windows** | `rundll32 url.dll,FileProtocolHandler` |
 
 ## Testing
 
@@ -169,13 +171,6 @@ The tests cover:
 - Custom template functionality
 - File output generation
 - HTML normalization and comparison
-
-## Browser Compatibility
-
-The tool automatically detects your operating system and uses the appropriate command:
-- **Linux**: `xdg-open`
-- **macOS**: `open`
-- **Windows**: `rundll32 url.dll,FileProtocolHandler`
 
 ## License
 
